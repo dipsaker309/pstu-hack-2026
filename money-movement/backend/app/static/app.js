@@ -1,6 +1,7 @@
 const state = {
   token: localStorage.getItem("moneyMovementToken"),
   user: null,
+  page: "balance",
 };
 
 const authPanel = document.querySelector("#authPanel");
@@ -8,21 +9,78 @@ const appPanel = document.querySelector("#appPanel");
 const toast = document.querySelector("#toast");
 const welcomeText = document.querySelector("#welcomeText");
 const balanceText = document.querySelector("#balanceText");
+const summaryUser = document.querySelector("#summaryUser");
+const summaryEmail = document.querySelector("#summaryEmail");
 const requestsList = document.querySelector("#requestsList");
 const transactionsList = document.querySelector("#transactionsList");
+const showLogin = document.querySelector("#showLogin");
+const showRegister = document.querySelector("#showRegister");
+const loginForm = document.querySelector("#loginForm");
+const registerForm = document.querySelector("#registerForm");
+const sendOtpButton = document.querySelector("#sendOtpButton");
+const navButtons = document.querySelectorAll("[data-page]");
+const pagePanels = document.querySelectorAll("[data-page-panel]");
 
-document.querySelector("#registerForm").addEventListener("submit", async (event) => {
+showLogin.addEventListener("click", () => setAuthMode("login"));
+showRegister.addEventListener("click", () => setAuthMode("register"));
+
+document.querySelectorAll(".demo-account").forEach((button) => {
+  button.addEventListener("click", () => {
+    setAuthMode("login");
+    loginForm.elements.username_or_email.value = button.dataset.username;
+    loginForm.elements.password.value = button.dataset.password;
+    loginForm.elements.password.focus();
+  });
+});
+
+sendOtpButton.addEventListener("click", async () => {
+  const email = registerForm.elements.email.value.trim();
+
+  if (!email) {
+    showToast("Please enter your email first");
+    registerForm.elements.email.focus();
+    return;
+  }
+
+  try {
+    await api("/api/auth/send-otp", {
+      method: "POST",
+      body: { email },
+      publicRequest: true,
+    });
+    showToast("OTP sent to your email");
+    registerForm.elements.otp.focus();
+  } catch (error) {
+    showToast(error.message || "Unable to send OTP");
+  }
+});
+
+navButtons.forEach((button) => {
+  button.addEventListener("click", () => {
+    setDashboardPage(button.dataset.page);
+  });
+});
+
+registerForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = new FormData(event.currentTarget);
+  const otp = String(form.get("otp") || "").trim();
+
+  if (!/^\d{4}$/.test(otp)) {
+    showToast("Please enter a valid 4-digit OTP");
+    return;
+  }
+
   await authenticate("/api/auth/register", {
     username: form.get("username"),
     email: form.get("email"),
     password: form.get("password"),
+    otp,
   });
   event.currentTarget.reset();
 });
 
-document.querySelector("#loginForm").addEventListener("submit", async (event) => {
+loginForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const form = new FormData(event.currentTarget);
   await authenticate("/api/auth/login", {
@@ -36,6 +94,7 @@ document.querySelector("#logoutButton").addEventListener("click", () => {
   localStorage.removeItem("moneyMovementToken");
   state.token = null;
   state.user = null;
+  state.page = "balance";
   renderAuthState();
 });
 
@@ -56,6 +115,7 @@ document.querySelector("#transferForm").addEventListener("submit", async (event)
   showToast("Transfer completed");
   event.currentTarget.reset();
   await loadDashboard();
+  setDashboardPage("statements");
 });
 
 document.querySelector("#requestForm").addEventListener("submit", async (event) => {
@@ -72,6 +132,7 @@ document.querySelector("#requestForm").addEventListener("submit", async (event) 
   showToast("Money request created");
   event.currentTarget.reset();
   await loadDashboard();
+  setDashboardPage("moneyRequests");
 });
 
 async function authenticate(path, body) {
@@ -128,7 +189,28 @@ function renderAuthState() {
 
   if (signedIn) {
     welcomeText.textContent = `Wallet for @${state.user.username}`;
+    summaryUser.textContent = `@${state.user.username}`;
+    summaryEmail.textContent = state.user.email;
+    setDashboardPage(state.page);
   }
+}
+
+function setAuthMode(mode) {
+  const login = mode === "login";
+  loginForm.classList.toggle("hidden", !login);
+  registerForm.classList.toggle("hidden", login);
+  showLogin.classList.toggle("is-active", login);
+  showRegister.classList.toggle("is-active", !login);
+}
+
+function setDashboardPage(page) {
+  state.page = page;
+  navButtons.forEach((button) => {
+    button.classList.toggle("is-active", button.dataset.page === page);
+  });
+  pagePanels.forEach((panel) => {
+    panel.classList.toggle("hidden", panel.dataset.pagePanel !== page);
+  });
 }
 
 function renderRequests(requests) {

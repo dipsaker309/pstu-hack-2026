@@ -4,7 +4,7 @@ from decimal import Decimal
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Numeric, String, UniqueConstraint
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, Numeric, String, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -32,6 +32,8 @@ class Transaction(Base):
             "idempotency_key",
             name="uq_transactions_idempotency_key",
         ),
+        Index("ix_transactions_sender_created_at", "sender_id", "created_at"),
+        Index("ix_transactions_receiver_created_at", "receiver_id", "created_at"),
     )
 
     id: Mapped[int] = mapped_column(

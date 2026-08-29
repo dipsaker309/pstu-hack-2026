@@ -8,11 +8,21 @@ class UserCreate(BaseModel):
     username: str = Field(min_length=3, max_length=50, pattern=r"^[a-zA-Z0-9_]+$")
     email: EmailStr
     password: str = Field(min_length=6, max_length=128)
+    otp: str = Field(min_length=4, max_length=4, pattern=r"^\d{4}$")
 
 
 class UserLogin(BaseModel):
     username_or_email: str = Field(min_length=3, max_length=255)
     password: str = Field(min_length=1, max_length=128)
+
+
+class EmailRequest(BaseModel):
+    email: EmailStr
+
+
+class VerifyOTPRequest(BaseModel):
+    email: EmailStr
+    otp: str = Field(min_length=4, max_length=4, pattern=r"^\d{4}$")
 
 
 class UserRead(BaseModel):

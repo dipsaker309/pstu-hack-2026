@@ -4,7 +4,7 @@ from decimal import Decimal
 from enum import StrEnum
 from typing import TYPE_CHECKING
 
-from sqlalchemy import DateTime, Enum, ForeignKey, Integer, Numeric, String
+from sqlalchemy import DateTime, Enum, ForeignKey, Index, Integer, Numeric, String
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.database import Base
@@ -22,6 +22,11 @@ class MoneyRequestStatus(StrEnum):
 
 class MoneyRequest(Base):
     __tablename__ = "money_requests"
+
+    __table_args__ = (
+        Index("ix_money_requests_payer_status_created_at", "payer_id", "status", "created_at"),
+        Index("ix_money_requests_requester_created_at", "requester_id", "created_at"),
+    )
 
     id: Mapped[int] = mapped_column(
         Integer,

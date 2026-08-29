@@ -3,43 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Money Movement</title>
+    <title>Cresco</title>
     <link rel="stylesheet" href="/static/styles.css" />
   </head>
   <body>
     <main class="shell">
       <section class="auth-panel" id="authPanel">
-        <div>
-          <p class="eyebrow">Money Movement</p>
-          <h1>Send, request, and verify demo money safely</h1>
-          <p class="lede">
-            Create demo users with BDT 100,000 starting balance, transfer money, request payments, and show reliable transaction handling.
-          </p>
+        <div class="brand-card">
+          <div class="brand-mark">C</div>
+          <h1>Cresco</h1>
+          <div class="auth-switch" aria-label="Account options">
+            <button class="switch-button is-active" id="showLogin" type="button">Login</button>
+            <button class="switch-button" id="showRegister" type="button">Create account</button>
+          </div>
         </div>
 
-        <div class="auth-grid">
-          <form class="panel" id="registerForm">
-            <h2>Create Account</h2>
-            <label>
-              Username
-              <input name="username" placeholder="rahim" autocomplete="username" required minlength="3" />
-            </label>
-            <label>
-              Email
-              <input name="email" type="email" placeholder="rahim@example.com" autocomplete="email" required />
-            </label>
-            <label>
-              Password
-              <input name="password" type="password" placeholder="At least 6 characters" autocomplete="new-password" required minlength="6" />
-            </label>
-            <button type="submit">Register</button>
-          </form>
-
-          <form class="panel" id="loginForm">
+        <div class="auth-stage">
+          <form class="panel auth-form" id="loginForm">
             <h2>Login</h2>
             <label>
               Username or Email
-              <input name="username_or_email" placeholder="rahim" autocomplete="username" required />
+              <input name="username_or_email" placeholder="dip" autocomplete="username" required />
             </label>
             <label>
               Password
@@ -47,32 +31,94 @@
             </label>
             <button type="submit">Login</button>
           </form>
+
+          <form class="panel auth-form hidden" id="registerForm">
+            <h2>Create Account</h2>
+            <label>
+              Username
+              <input name="username" placeholder="newuser" autocomplete="username" required minlength="3" />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" placeholder="newuser@example.com" autocomplete="email" required />
+            </label>
+            <div class="otp-strip">
+              <button type="button" id="sendOtpButton">Send OTP</button>
+            </div>
+            <label>
+              OTP
+              <input name="otp" type="text" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" placeholder="1234" required />
+            </label>
+            <label>
+              Password
+              <input name="password" type="password" placeholder="At least 6 characters" autocomplete="new-password" required minlength="6" />
+            </label>
+            <button type="submit">Create account</button>
+          </form>
+
+          <section class="demo-panel" aria-label="Test accounts">
+            <h2>Test Accounts</h2>
+            <div class="demo-grid">
+              <button class="demo-account" type="button" data-username="dip" data-password="Dip@12345">
+                <span>Dip</span>
+                <small>dip · dip@example.com · Dip@12345</small>
+              </button>
+              <button class="demo-account" type="button" data-username="kafi" data-password="Kafi@12345">
+                <span>Kafi</span>
+                <small>kafi · kafi@example.com · Kafi@12345</small>
+              </button>
+            </div>
+          </section>
         </div>
       </section>
 
       <section class="app-panel hidden" id="appPanel">
-        <header class="topbar">
+        <header class="app-header">
           <div>
-            <p class="eyebrow">Dashboard</p>
+            <p class="eyebrow">Cresco</p>
             <h1 id="welcomeText">Wallet</h1>
           </div>
           <button class="ghost" id="logoutButton" type="button">Logout</button>
         </header>
 
-        <section class="balance-band">
-          <div>
-            <span>Available Balance</span>
-            <strong id="balanceText">BDT 0.00</strong>
+        <nav class="dashboard-nav" aria-label="Dashboard pages">
+          <button class="nav-button is-active" type="button" data-page="balance">Available Balance</button>
+          <button class="nav-button" type="button" data-page="send">Send Money</button>
+          <button class="nav-button" type="button" data-page="request">Request Money</button>
+          <button class="nav-button" type="button" data-page="statements">Transaction Statements</button>
+          <button class="nav-button" type="button" data-page="moneyRequests">Money Requests</button>
+        </nav>
+
+        <section class="dashboard-page" data-page-panel="balance">
+          <section class="balance-band">
+            <div>
+              <span>Available Balance</span>
+              <strong id="balanceText">BDT 0.00</strong>
+            </div>
+            <button class="ghost" id="refreshButton" type="button">Refresh</button>
+          </section>
+
+          <div class="panel summary-panel">
+            <h2>Account Summary</h2>
+            <div class="summary-grid">
+              <div>
+                <small>Account</small>
+                <strong id="summaryUser">-</strong>
+              </div>
+              <div>
+                <small>Email</small>
+                <strong id="summaryEmail">-</strong>
+              </div>
+            </div>
           </div>
-          <button class="ghost" id="refreshButton" type="button">Refresh</button>
         </section>
 
-        <section class="workspace">
-          <form class="panel" id="transferForm">
+        <section class="dashboard-page hidden" data-page-panel="send">
+          <form class="panel form-page" id="transferForm">
             <h2>Send Money</h2>
             <label>
               Receiver Username
-              <input name="receiver_username" placeholder="karim" required />
+              <input name="receiver_username" placeholder="kafi" required />
             </label>
             <label>
               Amount
@@ -84,12 +130,14 @@
             </label>
             <button type="submit">Send Money</button>
           </form>
+        </section>
 
-          <form class="panel" id="requestForm">
+        <section class="dashboard-page hidden" data-page-panel="request">
+          <form class="panel form-page" id="requestForm">
             <h2>Request Money</h2>
             <label>
               Payer Username
-              <input name="payer_username" placeholder="karim" required />
+              <input name="payer_username" placeholder="kafi" required />
             </label>
             <label>
               Amount
@@ -103,14 +151,17 @@
           </form>
         </section>
 
-        <section class="lists">
+        <section class="dashboard-page hidden" data-page-panel="statements">
+          <div class="panel">
+            <h2>Transaction Statements</h2>
+            <div class="list statement-list" id="transactionsList"></div>
+          </div>
+        </section>
+
+        <section class="dashboard-page hidden" data-page-panel="moneyRequests">
           <div class="panel">
             <h2>Money Requests</h2>
             <div class="list" id="requestsList"></div>
-          </div>
-          <div class="panel">
-            <h2>Transaction History</h2>
-            <div class="list" id="transactionsList"></div>
           </div>
         </section>
       </section>

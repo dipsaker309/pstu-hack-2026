@@ -20,35 +20,51 @@ def load_env_file() -> None:
             continue
 
         key, value = line.split("=", 1)
-        key = key.strip()
-        value = value.strip().strip('"').strip("'")
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
 
-        os.environ.setdefault(key, value)
+
+def sqlite_file_path(database_url: str) -> Path | None:
+    if not database_url.startswith("sqlite:///"):
+        return None
+
+    raw_path = database_url.removeprefix("sqlite:///")
+    db_path = Path(raw_path)
+
+    if not db_path.is_absolute():
+        db_path = Path(__file__).resolve().parents[1] / db_path
+
+    return db_path
 
 
 load_env_file()
 
-BASE_DIR = Path(__file__).resolve().parents[1]
-DEFAULT_DATABASE_URL = f"sqlite:///{(BASE_DIR / 'data' / 'money_movement.db').as_posix()}"
+DEFAULT_DATABASE_URL = "postgresql://postgres:postgres@localhost:5432/money_movement"
+DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
 
-DATABASE_URL = os.getenv(
-    "DATABASE_URL",
-    DEFAULT_DATABASE_URL,
-)
+engine_options: dict[str, object] = {
+    "pool_pre_ping": True,
+}
 
-if DATABASE_URL.startswith("sqlite:///"):
-    database_path = Path(DATABASE_URL.removeprefix("sqlite:///"))
-    database_path.parent.mkdir(parents=True, exist_ok=True)
+db_path = sqlite_file_path(DATABASE_URL)
 
-connect_args = {}
+if db_path is not None:
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    engine_options["connect_args"] = {"check_same_thread": False}
+else:
+    engine_options.update(
+        {
+            "pool_size": int(os.getenv("DB_POOL_SIZE", "10")),
+            "max_overflow": int(os.getenv("DB_MAX_OVERFLOW", "20")),
+            "pool_timeout": int(os.getenv("DB_POOL_TIMEOUT", "30")),
+            "pool_recycle": int(os.getenv("DB_POOL_RECYCLE", "1800")),
+        },
+    )
 
-if DATABASE_URL.startswith("sqlite"):
-    connect_args["check_same_thread"] = False
+RUN_STARTUP_DB_INIT = os.getenv("RUN_STARTUP_DB_INIT", "true").strip().lower() == "true"
 
 engine = create_engine(
     DATABASE_URL,
-    pool_pre_ping=True,
-    connect_args=connect_args,
+    **engine_options,
 )
 
 SessionLocal = sessionmaker(

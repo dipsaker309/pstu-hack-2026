@@ -1,0 +1,104 @@
+x-cresco-env: &cresco-env
+  DATABASE_URL: postgresql://postgres:postgres@postgres:5432/money_movement
+  SECRET_KEY: replace-this-with-a-long-random-secret
+  RUN_STARTUP_DB_INIT: "false"
+  DB_POOL_SIZE: "10"
+  DB_MAX_OVERFLOW: "20"
+  DB_POOL_TIMEOUT: "30"
+  DB_POOL_RECYCLE: "1800"
+  NOTIFICATION_WORKER_INTERVAL_SECONDS: "5"
+
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: money_movement
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d money_movement"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./backups:/backups
+
+  init-db:
+    build:
+      context: ./backend
+    environment:
+      <<: *cresco-env
+      RUN_STARTUP_DB_INIT: "true"
+    command: python -m app.init_db
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: "no"
+
+  api-1:
+    build:
+      context: ./backend
+    environment: *cresco-env
+    depends_on:
+      init-db:
+        condition: service_completed_successfully
+    expose:
+      - "8000"
+
+  api-2:
+    build:
+      context: ./backend
+    environment: *cresco-env
+    depends_on:
+      init-db:
+        condition: service_completed_successfully
+    expose:
+      - "8000"
+
+  worker:
+    build:
+      context: ./backend
+    environment: *cresco-env
+    command: python -m app.worker
+    depends_on:
+      init-db:
+        condition: service_completed_successfully
+
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "8000:80"
+    volumes:
+      - ./infra/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api-1
+      - api-2
+
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    depends_on:
+      - api-1
+      - api-2
+
+  backup:
+    image: postgres:16
+    profiles:
+      - backup
+    environment:
+      PGPASSWORD: postgres
+    volumes:
+      - ./backups:/backups
+    command: >
+      sh -c "pg_dump -h postgres -U postgres -d money_movement -Fc
+      -f /backups/money_movement-$$(date +%Y%m%d-%H%M%S).dump"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

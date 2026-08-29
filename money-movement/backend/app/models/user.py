@@ -9,6 +9,7 @@ from app.database import Base
 
 if TYPE_CHECKING:
     from app.models.money_request import MoneyRequest
+    from app.models.notification import Notification
     from app.models.transaction import Transaction
     from app.models.wallet import Wallet
 
@@ -75,4 +76,9 @@ class User(Base):
         "MoneyRequest",
         back_populates="payer",
         foreign_keys="MoneyRequest.payer_id",
+    )
+
+    notifications: Mapped[list["Notification"]] = relationship(
+        "Notification",
+        back_populates="user",
     )

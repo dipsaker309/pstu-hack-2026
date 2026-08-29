@@ -1,0 +1,12 @@
+{
+  "venvPath": "./money-movement/backend",
+  "venv": ".venv",
+  "include": [
+    "money-movement/backend/app"
+  ],
+  "extraPaths": [
+    "money-movement/backend"
+  ],
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false
+}

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Money Movement</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="auth-panel" id="authPanel">
+        <div>
+          <p class="eyebrow">Money Movement</p>
+          <h1>Send, request, and verify demo money safely</h1>
+          <p class="lede">
+            Create demo users with BDT 100,000 starting balance, transfer money, request payments, and show reliable transaction handling.
+          </p>
+        </div>
+
+        <div class="auth-grid">
+          <form class="panel" id="registerForm">
+            <h2>Create Account</h2>
+            <label>
+              Username
+              <input name="username" placeholder="rahim" autocomplete="username" required minlength="3" />
+            </label>
+            <label>
+              Email
+              <input name="email" type="email" placeholder="rahim@example.com" autocomplete="email" required />
+            </label>
+            <label>
+              Password
+              <input name="password" type="password" placeholder="At least 6 characters" autocomplete="new-password" required minlength="6" />
+            </label>
+            <button type="submit">Register</button>
+          </form>
+
+          <form class="panel" id="loginForm">
+            <h2>Login</h2>
+            <label>
+              Username or Email
+              <input name="username_or_email" placeholder="rahim" autocomplete="username" required />
+            </label>
+            <label>
+              Password
+              <input name="password" type="password" autocomplete="current-password" required />
+            </label>
+            <button type="submit">Login</button>
+          </form>
+        </div>
+      </section>
+
+      <section class="app-panel hidden" id="appPanel">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">Dashboard</p>
+            <h1 id="welcomeText">Wallet</h1>
+          </div>
+          <button class="ghost" id="logoutButton" type="button">Logout</button>
+        </header>
+
+        <section class="balance-band">
+          <div>
+            <span>Available Balance</span>
+            <strong id="balanceText">BDT 0.00</strong>
+          </div>
+          <button class="ghost" id="refreshButton" type="button">Refresh</button>
+        </section>
+
+        <section class="workspace">
+          <form class="panel" id="transferForm">
+            <h2>Send Money</h2>
+            <label>
+              Receiver Username
+              <input name="receiver_username" placeholder="karim" required />
+            </label>
+            <label>
+              Amount
+              <input name="amount" type="number" min="0.01" step="0.01" placeholder="500.00" required />
+            </label>
+            <label>
+              Note
+              <input name="note" placeholder="Lunch payment" maxlength="255" />
+            </label>
+            <button type="submit">Send Money</button>
+          </form>
+
+          <form class="panel" id="requestForm">
+            <h2>Request Money</h2>
+            <label>
+              Payer Username
+              <input name="payer_username" placeholder="karim" required />
+            </label>
+            <label>
+              Amount
+              <input name="amount" type="number" min="0.01" step="0.01" placeholder="1200.00" required />
+            </label>
+            <label>
+              Note
+              <input name="note" placeholder="Shared expense" maxlength="255" />
+            </label>
+            <button type="submit">Request Money</button>
+          </form>
+        </section>
+
+        <section class="lists">
+          <div class="panel">
+            <h2>Money Requests</h2>
+            <div class="list" id="requestsList"></div>
+          </div>
+          <div class="panel">
+            <h2>Transaction History</h2>
+            <div class="list" id="transactionsList"></div>
+          </div>
+        </section>
+      </section>
+
+      <div class="toast hidden" id="toast"></div>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>
